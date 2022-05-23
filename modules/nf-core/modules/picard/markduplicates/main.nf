@@ -30,6 +30,7 @@ process PICARD_MARKDUPLICATES {
     }
     """
     echo \$TMPDIR
+    echo \$_JAVA_OPTIONS
     mkdir tmp
     export _JAVA_OPTIONS=-Djava.io.tmpdir=./tmp
     picard \\
