@@ -30,6 +30,7 @@ process PICARD_MARKDUPLICATES {
     }
     """
     echo \$TMPDIR
+    echo \$_JAVA_OPTIONS
     picard \\
         -Xmx${avail_mem}g \\
         MarkDuplicates \\
