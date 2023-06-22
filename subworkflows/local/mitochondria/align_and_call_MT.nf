@@ -13,6 +13,7 @@ include { HAPLOCHECK as HAPLOCHECK_MT                                       } fr
 include { GATK4_MUTECT2 as GATK4_MUTECT2_MT                                 } from '../../../modules/nf-core/gatk4/mutect2/main'
 include { GATK4_FILTERMUTECTCALLS as  GATK4_FILTERMUTECTCALLS_MT            } from '../../../modules/nf-core/gatk4/filtermutectcalls/main'
 include { TABIX_TABIX as TABIX_TABIX_MT                                     } from '../../../modules/nf-core/tabix/tabix/main'
+include { EKLIPSE as EKLIPSE_MT                                             } from '../modules/nf-core/eklipse/main' 
 
 workflow ALIGN_AND_CALL_MT {
     take:
@@ -47,6 +48,8 @@ workflow ALIGN_AND_CALL_MT {
         ch_sort_index_bam        = SAMTOOLS_SORT_MT.out.bam.join(SAMTOOLS_INDEX_MT.out.bai, by: [0])
         ch_sort_index_bam_int_mt = ch_sort_index_bam.combine(intervals_mt)
 
+        EKLIPSE_MT(ch_sort_index_bam,[])
+
         GATK4_MUTECT2_MT (ch_sort_index_bam_int_mt, fasta, fai, dict, [], [], [],[])
 
         // Haplocheck
@@ -70,16 +73,20 @@ workflow ALIGN_AND_CALL_MT {
         ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES_MT.out.versions.first())
         ch_versions = ch_versions.mix(SAMTOOLS_SORT_MT.out.versions.first())
         ch_versions = ch_versions.mix(SAMTOOLS_INDEX_MT.out.versions.first())
+        ch_versions = ch_versions.mix(EKLIPSE_MT.out.versions.first())
         ch_versions = ch_versions.mix(GATK4_MUTECT2_MT.out.versions.first())
         ch_versions = ch_versions.mix(HAPLOCHECK_MT.out.versions.first())
         ch_versions = ch_versions.mix(GATK4_FILTERMUTECTCALLS_MT.out.versions.first())
 
     emit:
-        vcf       = GATK4_FILTERMUTECTCALLS_MT.out.vcf
-        tbi       = GATK4_FILTERMUTECTCALLS_MT.out.tbi
-        stats     = GATK4_MUTECT2_MT.out.stats
-        filt_sats = GATK4_FILTERMUTECTCALLS_MT.out.stats
-        txt       = HAPLOCHECK_MT.out.txt
-        html      = HAPLOCHECK_MT.out.html
-        versions  = ch_versions
+        vcf            = GATK4_FILTERMUTECTCALLS_MT.out.vcf
+        eklipse_del    = EKLIPSE_MT.out.deletions
+        eklipse_genes  = EKLIPSE_MT.out.genes
+        eklipse_circos = EKLIPSE_MT.out.circos
+        tbi            = GATK4_FILTERMUTECTCALLS_MT.out.tbi
+        stats          = GATK4_MUTECT2_MT.out.stats
+        filt_sats      = GATK4_FILTERMUTECTCALLS_MT.out.stats
+        txt            = HAPLOCHECK_MT.out.txt
+        html           = HAPLOCHECK_MT.out.html
+        versions       = ch_versions
 }

@@ -97,17 +97,20 @@ workflow ANALYSE_MT {
         ch_versions = ch_versions.mix(MERGE_ANNOTATE_MT.out.versions)
 
     emit:
-        vcf          = MERGE_ANNOTATE_MT.out.vcf
-        tbi          = MERGE_ANNOTATE_MT.out.tbi
-        stats        = ALIGN_AND_CALL_MT.out.stats
-        filt_sats    = ALIGN_AND_CALL_MT.out.filt_sats
-        stats_sh     = ALIGN_AND_CALL_MT_SHIFT.out.stats
-        filt_sats_sh = ALIGN_AND_CALL_MT_SHIFT.out.filt_sats
-        haplog       = MERGE_ANNOTATE_MT.out.haplog
-        report       = MERGE_ANNOTATE_MT.out.report
-        txt          = ALIGN_AND_CALL_MT.out.txt
-        html         = ALIGN_AND_CALL_MT.out.html
-        txt_sh       = ALIGN_AND_CALL_MT_SHIFT.out.txt
-        html_sh      = ALIGN_AND_CALL_MT_SHIFT.out.html
-        versions     = ch_versions
+        vcf            = MERGE_ANNOTATE_MT.out.vcf
+        tbi            = MERGE_ANNOTATE_MT.out.tbi
+        stats          = ALIGN_AND_CALL_MT.out.stats
+        filt_sats      = ALIGN_AND_CALL_MT.out.filt_sats
+        eklipse_del    = ALIGN_AND_CALL_MT.out.eklipse_del
+        eklipse_genes  = ALIGN_AND_CALL_MT.out.eklipse_genes
+        eklipse_circos = ALIGN_AND_CALL_MT.out.eklipse_circos
+        stats_sh       = ALIGN_AND_CALL_MT_SHIFT.out.stats
+        filt_sats_sh   = ALIGN_AND_CALL_MT_SHIFT.out.filt_sats
+        haplog         = MERGE_ANNOTATE_MT.out.haplog
+        report         = MERGE_ANNOTATE_MT.out.report
+        txt            = ALIGN_AND_CALL_MT.out.txt
+        html           = ALIGN_AND_CALL_MT.out.html
+        txt_sh         = ALIGN_AND_CALL_MT_SHIFT.out.txt
+        html_sh        = ALIGN_AND_CALL_MT_SHIFT.out.html
+        versions       = ch_versions
 }
