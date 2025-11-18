@@ -203,6 +203,8 @@ workflow RAREDISEASE {
                                                                             : Channel.value([])
     ch_score_config_snv         = params.score_config_snv                   ? Channel.fromPath(params.score_config_snv).collect()
                                                                             : Channel.value([])
+    ch_genmod_gicam_score_config = params.score_config_genmod_gicam_snv     ? Channel.fromPath(params.score_config_genmod_gicam_snv).collect()
+                                                                            : Channel.value([])
     ch_score_config_sv          = params.score_config_sv                    ? Channel.fromPath(params.score_config_sv).collect()
                                                                             : Channel.value([])
     ch_sdf                      = params.sdf                                ? Channel.fromPath(params.sdf).map{it -> [[id:it.simpleName],it]}.collect()
@@ -547,7 +549,9 @@ workflow RAREDISEASE {
                 ch_ranksnv_nuclear_in,
                 ch_pedfile,
                 ch_reduced_penetrance,
-                ch_score_config_snv
+                ch_score_config_snv,
+                ch_genmod_gicam_score_config,
+                true
             )
             ch_versions = ch_versions.mix(RANK_VARIANTS_SNV.out.versions)
         }
@@ -615,7 +619,9 @@ workflow RAREDISEASE {
                 ch_ranksnv_mt_in,
                 ch_pedfile,
                 ch_reduced_penetrance,
-                ch_score_config_mt
+                ch_score_config_mt,
+                ch_genmod_gicam_score_config,
+                false
             )
             ch_versions = ch_versions.mix(RANK_VARIANTS_MT.out.versions)
         }
@@ -706,7 +712,9 @@ workflow RAREDISEASE {
                 ch_ranksnv_sv_in,
                 ch_pedfile,
                 ch_reduced_penetrance,
-                ch_score_config_sv
+                ch_score_config_sv,
+                ch_genmod_gicam_score_config,
+                false
             )
             ch_versions = ch_versions.mix(RANK_VARIANTS_SV.out.versions)
         }
