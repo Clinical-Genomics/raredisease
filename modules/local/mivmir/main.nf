@@ -2,7 +2,7 @@ process MIVMIR_INFER {
     // https://github.com/Clinical-Genomics/rdds/tree/master/src/rdds/variant_rank_score
 
     tag "${meta.id}"
-    label 'process_single'
+    label 'process_high'
 
     container "docker.io/clinicalgenomics/rdds_mivmir:v1.12.0-rc6"
 
