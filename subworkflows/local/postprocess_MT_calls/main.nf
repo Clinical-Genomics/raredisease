@@ -8,6 +8,10 @@ include { BCFTOOLS_NORM as SPLIT_MULTIALLELICS_MT               } from '../../..
 include { TABIX_TABIX as TABIX_TABIX_MT                         } from '../../../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_NORM as REMOVE_DUPLICATES_MT                 } from '../../../modules/nf-core/bcftools/norm/main'
 include { TABIX_TABIX as TABIX_TABIX_MT2                        } from '../../../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_NORM as SPLIT_MULTIALLELICS_MT2              } from '../../../modules/nf-core/bcftools/norm/main'
+include { TABIX_TABIX as TABIX_TABIX_MT3                        } from '../../../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_NORM as REMOVE_DUPLICATES_MT2                } from '../../../modules/nf-core/bcftools/norm/main'
+include { TABIX_TABIX as TABIX_TABIX_MT4                        } from '../../../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_MERGE as BCFTOOLS_MERGE_MT                   } from '../../../modules/nf-core/bcftools/merge/main'
 include { TABIX_TABIX as TABIX_TABIX_MERGE                      } from '../../../modules/nf-core/tabix/tabix/main'
 include { PICARD_LIFTOVERVCF                                    } from '../../../modules/nf-core/picard/liftovervcf/main'
@@ -25,7 +29,7 @@ workflow POSTPROCESS_MT_CALLS {
         ch_mtshift_backchain   // channel: [mandatory] [ val(meta), path(backchain) ]
         ch_case_info           // channel: [mandatory] [ val(case_info) ]
         ch_foundin_header      // channel: [mandatory] [ path(header) ]
-        ch_genome_chrsizes // channel: [mandatory] [ path(chrsizes) ]
+        ch_genome_chrsizes     // channel: [mandatory] [ path(chrsizes) ]
 
     main:
         ch_versions = Channel.empty()
@@ -103,6 +107,20 @@ workflow POSTPROCESS_MT_CALLS {
 
         TABIX_TABIX_MERGE(ch_addfoundintag_in)
 
+        ch_addfoundintag_in
+            .join(TABIX_TABIX_MERGE.out.tbi, failOnMismatch:true, failOnDuplicate:true)
+            .set { ch_in_split2 }
+
+        SPLIT_MULTIALLELICS_MT2 (ch_in_split2, ch_genome_fasta)
+        TABIX_TABIX_MT3(SPLIT_MULTIALLELICS_MT2.out.vcf)
+
+        // Removing duplicates and merging if there is more than one sample
+        SPLIT_MULTIALLELICS_MT2.out.vcf
+            .join(TABIX_TABIX_MT3.out.tbi, failOnMismatch:true, failOnDuplicate:true)
+            .set { ch_in_remdup2 }
+        REMOVE_DUPLICATES_MT2(ch_in_remdup2, ch_genome_fasta)
+        TABIX_TABIX_MT4(REMOVE_DUPLICATES_MT2.out.vcf)
+
         ch_genome_chrsizes.flatten().map{chromsizes ->
             return [[id:'mutect2'], chromsizes]
             }
@@ -112,8 +130,8 @@ workflow POSTPROCESS_MT_CALLS {
             .map{meta,bed,tbi -> return [bed, tbi]}
             .set{ch_varcallerbed}
 
-        ch_addfoundintag_in
-            .join(TABIX_TABIX_MERGE.out.tbi)
+        REMOVE_DUPLICATES_MT2.out.vcf
+            .join(TABIX_TABIX_MT4.out.tbi)
             .combine(ch_varcallerbed)
             .set { ch_annotate_in }
 

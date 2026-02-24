@@ -7,12 +7,12 @@ include { CALCULATE_SEED_FRACTION } from '../../modules/local/calculate_seed_fra
 include { SAMTOOLS_VIEW           } from '../../modules/nf-core/samtools/view/main'
 include { SAMTOOLS_INDEX          } from '../../modules/nf-core/samtools/index/main'
 
-workflow SUBSAMPLE_MT {
+workflow SUBSAMPLE_MT_FRAC {
 
     take:
-        ch_mt_bam_bai          // channel: [mandatory] [ val(meta), path(bam), path(bai) ]
-        val_mt_subsample_rd    // channel: [mandatory] [ val(read_dept) ]
-        val_mt_subsample_seed  // channel: [mandatory] [ val(seed) ]
+        ch_mt_bam_bai             // channel: [mandatory] [ val(meta), path(bam), path(bai) ]
+        val_mt_subsample_rd       // channel: [mandatory] [ val(read_dept) ]
+        val_mt_subsample_seed     // channel: [mandatory] [ val(seed) ]
 
     main:
         ch_versions = Channel.empty()

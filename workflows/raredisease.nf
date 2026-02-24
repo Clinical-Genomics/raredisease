@@ -66,7 +66,8 @@ include { RANK_VARIANTS as RANK_VARIANTS_MT                  } from '../subworkf
 include { RANK_VARIANTS as RANK_VARIANTS_SNV                 } from '../subworkflows/local/rank_variants'
 include { RANK_VARIANTS as RANK_VARIANTS_SV                  } from '../subworkflows/local/rank_variants'
 include { SCATTER_GENOME                                     } from '../subworkflows/local/scatter_genome'
-include { SUBSAMPLE_MT                                       } from '../subworkflows/local/subsample_mt'
+include { SUBSAMPLE_MT_FRAC                                  } from '../subworkflows/local/subsample_mt_frac'
+include { SUBSAMPLE_MT_READS                                 } from '../subworkflows/local/subsample_mt_reads'
 include { VARIANT_EVALUATION                                 } from '../subworkflows/local/variant_evaluation'
 
 /*
@@ -197,6 +198,8 @@ workflow RAREDISEASE {
                                                                             : Channel.value([])
     ch_rtg_truthvcfs            = params.rtg_truthvcfs                      ? Channel.fromPath(params.rtg_truthvcfs).collect()
                                                                             : Channel.value([])
+    ch_sambamba_bed             = params.sambamba_regions                   ? Channel.fromPath(params.sambamba_regions).map { it -> [[id:'sambamba'],it]}.collect()
+                                                                            : Channel.empty()
     ch_sample_id_map            = params.sample_id_map                      ? Channel.fromList(samplesheetToList(params.sample_id_map, "${projectDir}/assets/sample_id_map.json"))
                                                                             : Channel.empty()
     ch_score_config_mt          = params.score_config_mt                    ? Channel.fromPath(params.score_config_mt).collect()
@@ -402,6 +405,7 @@ workflow RAREDISEASE {
         ch_svd_bed,
         ch_svd_mu,
         ch_svd_ud,
+        ch_sambamba_bed,
         Channel.value(params.ngsbits_samplegender_method)
     )
     ch_versions = ch_versions.mix(QC_BAM.out.versions)
@@ -454,8 +458,8 @@ workflow RAREDISEASE {
     if (!(params.skip_subworkflows && params.skip_subworkflows.split(',').contains('snv_calling'))) {
         CALL_SNV (
             ch_mapped.genome_bam_bai,
-            ch_mapped.mt_bam_bai,
-            ch_mapped.mtshift_bam_bai,
+            ch_mapped.mt_bam_bai_mtsub,
+            ch_mapped.mtshift_bam_bai_mtsub,
             ch_genome_chrsizes,
             ch_genome_fasta,
             ch_genome_fai,
@@ -639,11 +643,9 @@ workflow RAREDISEASE {
             ch_mapped.genome_marked_bai,
             ch_mapped.genome_bam_bai,
             ch_mapped.mt_bam_bai,
-            ch_mapped.mtshift_bam_bai,
             ch_genome_bwaindex,
             ch_genome_fasta,
             ch_genome_fai,
-            ch_mtshift_fasta,
             ch_case_info,
             ch_target_bed,
             ch_genome_dictionary,
@@ -733,7 +735,6 @@ workflow RAREDISEASE {
             ch_genome_fai,
             ch_me_references,
             ch_case_info,
-            params.genome
         )
         ch_versions = ch_versions.mix(CALL_MOBILE_ELEMENTS.out.versions)
 

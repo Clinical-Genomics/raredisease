@@ -21,15 +21,12 @@ workflow CALL_MOBILE_ELEMENTS {
         ch_genome_fai       // channel: [mandatory] [ val(meta), path(fai) ]
         ch_me_references    // channel: [mandatory] [path(tsv)]
         ch_case_info        // channel: [mandatory] [ val(case_info) ]
-        val_genome_build    // string: [mandatory] GRCh37 or GRCh38
 
     main:
-        ch_versions = Channel.empty()
-
         // Building chromosome channels based on fasta index
         ch_genome_fai
-            .splitCsv( sep: "\t", elem: 1, limit: 25 )
-            .map { meta, fai -> [ fai.first() ] }
+            .splitCsv( sep: "\t", elem: 1, limit: 24 )
+            .map { _meta, fai -> [ fai.first() ] }
             .collect()
             .map { chr -> [ chr, chr.size() ] }
             .transpose()
@@ -124,7 +121,7 @@ workflow CALL_MOBILE_ELEMENTS {
         SVDB_MERGE_ME ( ch_svdb_merge_me_input, [], true )
         TABIX_ME ( SVDB_MERGE_ME.out.vcf )
 
-        ch_versions = ch_versions.mix(ME_SPLIT_ALIGNMENT.out.versions.first())
+        ch_versions = ME_SPLIT_ALIGNMENT.out.versions.first()
         ch_versions = ch_versions.mix(ME_INDEX_SPLIT_ALIGNMENT.out.versions.first())
         ch_versions = ch_versions.mix(RETROSEQ_DISCOVER.out.versions.first())
         ch_versions = ch_versions.mix(RETROSEQ_CALL.out.versions.first())
